@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import Map, { Marker, Popup, NavigationControl } from 'react-map-gl';
+import MapGL, { Marker, Popup, NavigationControl } from 'react-map-gl';
 import { format } from 'date-fns';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import type { EventRecord } from '../lib/types';
@@ -62,7 +62,7 @@ export default function MapPanel({ events, onSelectEvent, mini }: Props) {
   }
 
   return (
-    <Map
+    <MapGL
       initialViewState={center}
       style={{ width: '100%', height: '100%' }}
       mapStyle="mapbox://styles/mapbox/dark-v11"
@@ -150,6 +150,6 @@ export default function MapPanel({ events, onSelectEvent, mini }: Props) {
           </div>
         </Popup>
       )}
-    </Map>
+    </MapGL>
   );
 }
