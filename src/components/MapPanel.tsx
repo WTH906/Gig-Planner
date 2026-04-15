@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import Map, { Marker, Popup } from 'react-map-gl';
+import Map, { Marker, Popup, NavigationControl } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import type { EventRecord } from '../lib/types';
 
@@ -46,8 +46,9 @@ export default function MapPanel({ events, onSelectEvent, mini }: Props) {
       mapStyle="mapbox://styles/mapbox/dark-v11"
       mapboxAccessToken={MAPBOX_TOKEN}
       attributionControl={false}
-      interactive={!mini}
     >
+      <NavigationControl position="top-right" />
+
       {geoEvents.map((ev) => (
         <Marker key={ev.id} latitude={ev.latitude!} longitude={ev.longitude!}
           anchor="bottom"
