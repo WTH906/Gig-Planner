@@ -1,0 +1,185 @@
+@import "react-big-calendar/lib/css/react-big-calendar.css";
+@import "tailwindcss";
+
+:root {
+  --clr-bg: #0f0f12;
+  --clr-surface: #1a1a22;
+  --clr-surface-hover: #24242e;
+  --clr-border: #2a2a36;
+  --clr-text: #e8e6f0;
+  --clr-text-muted: #8b89a0;
+  --clr-accent: #c084fc;
+  --clr-accent-dim: #7c3aed;
+  --clr-danger: #f87171;
+  --font-display: 'Playfair Display', serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--clr-bg);
+  color: var(--clr-text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- react-big-calendar dark theme overrides ---- */
+.rbc-calendar {
+  font-family: var(--font-body) !important;
+  background: transparent;
+}
+
+.rbc-toolbar {
+  display: none !important; /* We use our own toolbar */
+}
+
+.rbc-month-view,
+.rbc-time-view {
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border) !important;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.rbc-header {
+  background: var(--clr-surface);
+  border-bottom: 1px solid var(--clr-border) !important;
+  color: var(--clr-text-muted);
+  font-weight: 500;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 10px 4px !important;
+}
+
+.rbc-header + .rbc-header {
+  border-left: 1px solid var(--clr-border) !important;
+}
+
+.rbc-month-row + .rbc-month-row {
+  border-top: 1px solid var(--clr-border) !important;
+}
+
+.rbc-day-bg {
+  background: var(--clr-surface) !important;
+  transition: background 0.15s;
+}
+
+.rbc-day-bg:hover {
+  background: var(--clr-surface-hover) !important;
+}
+
+.rbc-day-bg + .rbc-day-bg {
+  border-left: 1px solid var(--clr-border) !important;
+}
+
+.rbc-off-range-bg {
+  background: rgba(15, 15, 18, 0.5) !important;
+}
+
+.rbc-date-cell {
+  color: var(--clr-text-muted);
+  font-size: 0.82rem;
+  padding: 4px 8px !important;
+}
+
+.rbc-date-cell.rbc-now {
+  color: var(--clr-accent);
+  font-weight: 700;
+}
+
+.rbc-today {
+  background: rgba(192, 132, 252, 0.06) !important;
+}
+
+.rbc-event {
+  background: var(--clr-accent-dim) !important;
+  border: none !important;
+  border-radius: 6px !important;
+  font-size: 0.78rem !important;
+  padding: 2px 6px !important;
+  color: #fff !important;
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+
+.rbc-event:hover {
+  filter: brightness(1.2);
+}
+
+.rbc-event.rbc-selected {
+  background: var(--clr-accent) !important;
+}
+
+.rbc-show-more {
+  color: var(--clr-accent) !important;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Time view */
+.rbc-time-header-content {
+  border-left: 1px solid var(--clr-border) !important;
+}
+
+.rbc-time-content {
+  border-top: 1px solid var(--clr-border) !important;
+}
+
+.rbc-time-content > * + * > * {
+  border-left: 1px solid var(--clr-border) !important;
+}
+
+.rbc-timeslot-group {
+  border-bottom: 1px solid var(--clr-border) !important;
+}
+
+.rbc-time-slot {
+  color: var(--clr-text-muted);
+  font-size: 0.72rem;
+}
+
+.rbc-time-gutter .rbc-timeslot-group {
+  border-bottom: 1px solid var(--clr-border) !important;
+}
+
+.rbc-current-time-indicator {
+  background: var(--clr-accent) !important;
+  height: 2px;
+}
+
+.rbc-allday-cell {
+  background: var(--clr-surface);
+}
+
+.rbc-time-view .rbc-header {
+  border-bottom: none !important;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--clr-border); border-radius: 3px; }
+
+/* Mapbox override */
+.mapboxgl-popup-content {
+  background: var(--clr-surface) !important;
+  color: var(--clr-text) !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+  font-family: var(--font-body) !important;
+  font-size: 0.85rem;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.5) !important;
+}
+
+.mapboxgl-popup-tip {
+  border-top-color: var(--clr-surface) !important;
+}
+
+.mapboxgl-ctrl-attrib {
+  display: none !important;
+}
