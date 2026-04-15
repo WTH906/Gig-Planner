@@ -100,11 +100,27 @@ body {
   background: var(--clr-accent-dim) !important;
   border: none !important;
   border-radius: 6px !important;
-  font-size: 0.78rem !important;
-  padding: 2px 6px !important;
+  font-size: 0.82rem !important;
+  padding: 4px 8px !important;
   color: #fff !important;
   cursor: pointer;
   transition: filter 0.15s;
+}
+
+.rbc-month-view .rbc-event {
+  margin: 2px 4px !important;
+  padding: 6px 10px !important;
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+}
+
+.rbc-month-view .rbc-row-content {
+  z-index: 4;
+}
+
+.rbc-month-row {
+  min-height: 120px !important;
 }
 
 .rbc-event:hover {
@@ -121,43 +137,49 @@ body {
   font-weight: 600;
 }
 
-/* Time view */
+/* Time view — hide hourly grid since all events are all-day */
+.rbc-time-view {
+  display: flex;
+  flex-direction: column;
+}
+
+.rbc-time-header {
+  flex: 1;
+}
+
 .rbc-time-header-content {
   border-left: 1px solid var(--clr-border) !important;
 }
 
 .rbc-time-content {
-  border-top: 1px solid var(--clr-border) !important;
-}
-
-.rbc-time-content > * + * > * {
-  border-left: 1px solid var(--clr-border) !important;
-}
-
-.rbc-timeslot-group {
-  border-bottom: 1px solid var(--clr-border) !important;
-}
-
-.rbc-time-slot {
-  color: var(--clr-text-muted);
-  font-size: 0.72rem;
-}
-
-.rbc-time-gutter .rbc-timeslot-group {
-  border-bottom: 1px solid var(--clr-border) !important;
-}
-
-.rbc-current-time-indicator {
-  background: var(--clr-accent) !important;
-  height: 2px;
+  display: none !important;
 }
 
 .rbc-allday-cell {
   background: var(--clr-surface);
+  min-height: 200px !important;
+}
+
+.rbc-allday-cell .rbc-row-bg .rbc-day-bg {
+  background: var(--clr-surface) !important;
+}
+
+.rbc-allday-cell .rbc-row-bg .rbc-day-bg + .rbc-day-bg {
+  border-left: 1px solid var(--clr-border) !important;
+}
+
+.rbc-allday-cell .rbc-event {
+  padding: 6px 10px !important;
+  font-size: 0.85rem !important;
+  border-radius: 8px !important;
 }
 
 .rbc-time-view .rbc-header {
   border-bottom: none !important;
+}
+
+.rbc-time-view .rbc-row-segment {
+  padding: 2px 4px;
 }
 
 /* Scrollbar */
