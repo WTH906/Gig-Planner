@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useEvents } from './hooks/useEvents';
 import CalendarView from './components/CalendarView';
 import EventModal from './components/EventModal';
@@ -16,6 +16,7 @@ export default function App() {
   const [selectedEvent, setSelectedEvent] = useState<EventRecord | null>(null);
   const [showMap, setShowMap] = useState(false);
   const [showTagManager, setShowTagManager] = useState(false);
+  const [slotDate, setSlotDate] = useState<Date | null>(null);
 
   // Keep selectedEvent in sync with the events array after refetches
   useEffect(() => {
@@ -29,8 +30,9 @@ export default function App() {
     }
   }, [store.events]);
 
-  const openCreate = (slotDate?: Date) => {
+  const openCreate = (date?: Date) => {
     setEditingEvent(null);
+    setSlotDate(date ?? null);
     setShowModal(true);
   };
 
@@ -44,19 +46,39 @@ export default function App() {
     setSelectedEvent(event);
   };
 
+  // Total spending: price × checked checkboxes per event
+  const totalSpent = useMemo(() => {
+    return store.events.reduce((sum, ev) => {
+      if (!ev.price || !ev.checkboxes) return sum;
+      const confirmed = ev.checkboxes.filter((cb) => cb.checked).length;
+      return sum + ev.price * confirmed;
+    }, 0);
+  }, [store.events]);
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
       <header className="flex items-center justify-between px-6 py-4 border-b"
         style={{ borderColor: 'var(--clr-border)', background: 'var(--clr-surface)' }}>
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg flex items-center justify-center text-lg"
-            style={{ background: 'var(--clr-accent-dim)' }}>
-            🎸
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center text-lg"
+              style={{ background: 'var(--clr-accent-dim)' }}>
+              🎸
+            </div>
+            <h1 className="text-xl tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>
+              GigBoard
+            </h1>
           </div>
-          <h1 className="text-xl tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>
-            GigBoard
-          </h1>
+
+          {/* Spending counter */}
+          <div className="px-3 py-1.5 rounded-lg text-sm"
+            style={{ background: 'var(--clr-bg)', border: '1px solid var(--clr-border)' }}>
+            <span style={{ color: 'var(--clr-text-muted)' }}>💸 Total: </span>
+            <span className="font-semibold" style={{ color: 'var(--clr-accent)' }}>
+              {totalSpent.toFixed(2)} €
+            </span>
+          </div>
         </div>
 
         <div className="flex items-center gap-3">
@@ -154,6 +176,7 @@ export default function App() {
       {showModal && (
         <EventModal
           event={editingEvent}
+          defaultDate={slotDate}
           tags={store.tags}
           onClose={() => { setShowModal(false); setEditingEvent(null); }}
           onSave={async (data, tagIds, cbLabels, bandNames) => {

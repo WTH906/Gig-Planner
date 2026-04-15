@@ -4,6 +4,7 @@ import { geocodeAddress } from '../lib/geocode';
 
 interface Props {
   event: EventRecord | null;
+  defaultDate?: Date | null;
   tags: Tag[];
   onClose: () => void;
   onSave: (
@@ -15,14 +16,18 @@ interface Props {
   onCreateTag: (name: string, color: string) => Promise<Tag | null>;
 }
 
-export default function EventModal({ event, tags, onClose, onSave, onCreateTag }: Props) {
+export default function EventModal({ event, defaultDate, tags, onClose, onSave, onCreateTag }: Props) {
   const [title, setTitle] = useState(event?.title ?? '');
   const [address, setAddress] = useState(event?.address ?? '');
+
+  const fallback = defaultDate ?? new Date();
+  const fallbackEnd = new Date(fallback.getTime() + 2 * 3600000);
+
   const [startDate, setStartDate] = useState(
-    event ? toLocalDatetime(event.start_date) : toLocalDatetime(new Date().toISOString())
+    event ? toLocalDatetime(event.start_date) : toLocalDatetime(fallback.toISOString())
   );
   const [endDate, setEndDate] = useState(
-    event ? toLocalDatetime(event.end_date) : toLocalDatetime(new Date(Date.now() + 2 * 3600000).toISOString())
+    event ? toLocalDatetime(event.end_date) : toLocalDatetime(fallbackEnd.toISOString())
   );
   const [selectedTags, setSelectedTags] = useState<string[]>(
     event?.tags?.map((t) => t.id) ?? []
