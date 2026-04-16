@@ -76,7 +76,7 @@ export default function CalendarView({
   return (
     <div className="flex flex-col h-full gap-4">
       {/* Custom navigation bar */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
         <button onClick={goToday}
           className="px-3 py-1 rounded-lg text-sm cursor-pointer"
           style={{ border: '1px solid var(--clr-border)', color: 'var(--clr-text-muted)' }}>
@@ -94,7 +94,7 @@ export default function CalendarView({
             ›
           </button>
         </div>
-        <h2 className="text-lg font-semibold" style={{ fontFamily: 'var(--font-display)' }}>
+        <h2 className="text-base sm:text-lg font-semibold" style={{ fontFamily: 'var(--font-display)' }}>
           {format(currentDate, view === 'month' ? 'MMMM yyyy' : "'Week of' dd/MM/yyyy")}
         </h2>
       </div>

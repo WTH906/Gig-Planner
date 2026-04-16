@@ -1,18 +1,20 @@
 import { useEffect, useRef } from 'react';
 import { format } from 'date-fns';
-import type { EventRecord, Checkbox } from '../lib/types';
+import type { EventRecord, Checkbox, Place } from '../lib/types';
 import MapPanel from './MapPanel';
 
 interface Props {
   event: EventRecord;
+  places: Place[];
   onClose: () => void;
   onEdit: () => void;
   onDelete: () => void;
   onToggleCheckbox: (cb: Checkbox) => void;
 }
 
-export default function EventDetail({ event, onClose, onEdit, onDelete, onToggleCheckbox }: Props) {
+export default function EventDetail({ event, places, onClose, onEdit, onDelete, onToggleCheckbox }: Props) {
   const ref = useRef<HTMLDivElement>(null);
+  const place = event.place_id ? places.find((p) => p.id === event.place_id) : null;
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -67,6 +69,12 @@ export default function EventDetail({ event, onClose, onEdit, onDelete, onToggle
               {format(new Date(event.start_date), 'HH:mm')} — {format(new Date(event.end_date), 'HH:mm')}
             </span>
           </div>
+          {place && (
+            <div className="flex items-center gap-2 text-sm">
+              <span style={{ color: 'var(--clr-text-muted)' }}>🏛</span>
+              <span className="font-medium">{place.name}</span>
+            </div>
+          )}
           {event.address && (
             <div className="flex items-center gap-2 text-sm">
               <span style={{ color: 'var(--clr-text-muted)' }}>📍</span>

@@ -17,6 +17,14 @@ export interface Band {
   name: string;
 }
 
+export interface Place {
+  id: string;
+  name: string;
+  address: string;
+  latitude: number | null;
+  longitude: number | null;
+}
+
 export interface EventRecord {
   id: string;
   title: string;
@@ -24,6 +32,7 @@ export interface EventRecord {
   latitude: number | null;
   longitude: number | null;
   price: number | null;
+  place_id: string | null;
   start_date: string;
   end_date: string;
   created_at: string;

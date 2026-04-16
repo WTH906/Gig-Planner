@@ -1,15 +1,21 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
-import type { EventRecord, Tag, Checkbox, Band } from '../lib/types';
+import type { EventRecord, Tag, Checkbox, Band, Place } from '../lib/types';
 
 export function useEvents() {
   const [events, setEvents] = useState<EventRecord[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
+  const [places, setPlaces] = useState<Place[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchTags = useCallback(async () => {
     const { data } = await supabase.from('tags').select('*').order('name');
     if (data) setTags(data);
+  }, []);
+
+  const fetchPlaces = useCallback(async () => {
+    const { data } = await supabase.from('places').select('*').order('name');
+    if (data) setPlaces(data);
   }, []);
 
   const fetchEvents = useCallback(async () => {
@@ -55,7 +61,8 @@ export function useEvents() {
   useEffect(() => {
     fetchTags();
     fetchEvents();
-  }, [fetchTags, fetchEvents]);
+    fetchPlaces();
+  }, [fetchTags, fetchEvents, fetchPlaces]);
 
   const createEvent = async (
     event: Omit<EventRecord, 'id' | 'created_at' | 'tags' | 'checkboxes' | 'bands'>,
@@ -215,9 +222,32 @@ export function useEvents() {
     await fetchEvents();
   };
 
+  // --- Places CRUD ---
+
+  const createPlace = async (name: string, address: string, latitude: number | null, longitude: number | null) => {
+    const { data } = await supabase
+      .from('places')
+      .insert({ name, address, latitude, longitude })
+      .select()
+      .single();
+    await fetchPlaces();
+    return data;
+  };
+
+  const updatePlace = async (id: string, updates: Partial<Omit<Place, 'id'>>) => {
+    await supabase.from('places').update(updates).eq('id', id);
+    await fetchPlaces();
+  };
+
+  const deletePlace = async (id: string) => {
+    await supabase.from('places').delete().eq('id', id);
+    await fetchPlaces();
+  };
+
   return {
     events,
     tags,
+    places,
     loading,
     createEvent,
     updateEvent,
@@ -226,6 +256,9 @@ export function useEvents() {
     createTag,
     updateTag,
     deleteTag,
+    createPlace,
+    updatePlace,
+    deletePlace,
     refetch: fetchEvents,
   };
 }

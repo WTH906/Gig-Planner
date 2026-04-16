@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import type { EventRecord, Tag } from '../lib/types';
+import type { EventRecord, Tag, Place } from '../lib/types';
 import { geocodeAddress } from '../lib/geocode';
 
 interface Props {
   event: EventRecord | null;
   defaultDate?: Date | null;
   tags: Tag[];
+  places: Place[];
   onClose: () => void;
   onSave: (
     data: Partial<EventRecord>,
@@ -16,9 +17,17 @@ interface Props {
   onCreateTag: (name: string, color: string) => Promise<Tag | null>;
 }
 
-export default function EventModal({ event, defaultDate, tags, onClose, onSave, onCreateTag }: Props) {
+export default function EventModal({ event, defaultDate, tags, places, onClose, onSave, onCreateTag }: Props) {
   const [title, setTitle] = useState(event?.title ?? '');
   const [address, setAddress] = useState(event?.address ?? '');
+
+  // Resolve which place the event is linked to (by id first, then by address match)
+  const initialPlaceId = event?.place_id
+    ? event.place_id
+    : event?.address
+    ? places.find((p) => p.address === event.address)?.id ?? 'custom'
+    : '';
+  const [selectedPlaceId, setSelectedPlaceId] = useState<string>(initialPlaceId);
 
   const fallback = defaultDate ?? new Date();
   const fallbackEnd = new Date(fallback.getTime() + 2 * 3600000);
@@ -97,13 +106,31 @@ export default function EventModal({ event, defaultDate, tags, onClose, onSave, 
     if (!title.trim()) return;
     setSaving(true);
 
-    const coords = await geocodeAddress(address);
+    // If a saved place is selected, use its coords directly
+    let lat: number | null = null;
+    let lng: number | null = null;
+
+    if (selectedPlaceId && selectedPlaceId !== 'custom' && selectedPlaceId !== '') {
+      const place = places.find((p) => p.id === selectedPlaceId);
+      if (place) {
+        lat = place.latitude;
+        lng = place.longitude;
+      }
+    } else if (address.trim()) {
+      const coords = await geocodeAddress(address);
+      lat = coords?.lat ?? null;
+      lng = coords?.lng ?? null;
+    }
 
     const data: Partial<EventRecord> = {
       title: title.trim(),
       address: address.trim(),
-      latitude: coords?.lat ?? null,
-      longitude: coords?.lng ?? null,
+      latitude: lat,
+      longitude: lng,
+      place_id:
+        selectedPlaceId && selectedPlaceId !== 'custom' && selectedPlaceId !== ''
+          ? selectedPlaceId
+          : null,
       price: price.trim() ? parseFloat(price) : null,
       start_date: new Date(startDate).toISOString(),
       end_date: new Date(endDate).toISOString(),
@@ -150,12 +177,40 @@ export default function EventModal({ event, defaultDate, tags, onClose, onSave, 
             placeholder="e.g. Rammstein @ Arena" style={inputStyle} />
         </label>
 
-        {/* Address */}
-        <label className="block mb-4">
-          <span className="text-xs uppercase tracking-wider mb-1 block" style={{ color: 'var(--clr-text-muted)' }}>Address</span>
-          <input value={address} onChange={(e) => setAddress(e.target.value)}
-            placeholder="e.g. Bercy Arena, Paris" style={inputStyle} />
-        </label>
+        {/* Address / Place */}
+        <div className="mb-4">
+          <span className="text-xs uppercase tracking-wider mb-1 block" style={{ color: 'var(--clr-text-muted)' }}>Place</span>
+          <select
+            value={selectedPlaceId}
+            onChange={(e) => {
+              const val = e.target.value;
+              setSelectedPlaceId(val);
+              if (val === 'custom' || val === '') {
+                // Keep existing address for custom, or clear
+                if (val === '') setAddress('');
+              } else {
+                const place = places.find((p) => p.id === val);
+                if (place) setAddress(place.address);
+              }
+            }}
+            style={{ ...inputStyle, appearance: 'none', marginBottom: selectedPlaceId === 'custom' ? 8 : 0 }}
+          >
+            <option value="">— Select a place —</option>
+            {places.map((p) => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+            <option value="custom">✏️ Custom address…</option>
+          </select>
+          {selectedPlaceId === 'custom' && (
+            <input value={address} onChange={(e) => setAddress(e.target.value)}
+              placeholder="e.g. Bercy Arena, Paris" style={inputStyle} />
+          )}
+          {selectedPlaceId && selectedPlaceId !== 'custom' && selectedPlaceId !== '' && (
+            <div className="text-xs mt-1 px-1" style={{ color: 'var(--clr-text-muted)' }}>
+              📍 {address}
+            </div>
+          )}
+        </div>
 
         {/* Dates */}
         <div className="flex gap-3 mb-4">

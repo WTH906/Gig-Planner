@@ -5,6 +5,7 @@ import EventModal from './components/EventModal';
 import EventDetail from './components/EventDetail';
 import MapPanel from './components/MapPanel';
 import TagManager from './components/TagManager';
+import PlacesManager from './components/PlacesManager';
 import type { EventRecord, CalendarView as ViewType } from './lib/types';
 
 export default function App() {
@@ -16,6 +17,7 @@ export default function App() {
   const [selectedEvent, setSelectedEvent] = useState<EventRecord | null>(null);
   const [showMap, setShowMap] = useState(false);
   const [showTagManager, setShowTagManager] = useState(false);
+  const [showPlacesManager, setShowPlacesManager] = useState(false);
   const [slotDate, setSlotDate] = useState<Date | null>(null);
 
   // Keep selectedEvent in sync with the events array after refetches
@@ -96,6 +98,19 @@ export default function App() {
             🏷 Tags
           </button>
 
+          {/* Places manager toggle */}
+          <button
+            onClick={() => setShowPlacesManager(true)}
+            className="px-3 py-2 sm:py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer flex-1 sm:flex-none"
+            style={{
+              background: 'transparent',
+              color: 'var(--clr-text-muted)',
+              border: '1px solid var(--clr-border)',
+            }}
+          >
+            📍 Places
+          </button>
+
           {/* Map toggle */}
           <button
             onClick={() => setShowMap(!showMap)}
@@ -138,9 +153,10 @@ export default function App() {
       </header>
 
       {/* Main content */}
-      <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
+      <div className="flex flex-col md:flex-row flex-1 md:overflow-hidden">
         {/* Calendar area */}
-        <div className={`flex-1 p-3 sm:p-6 overflow-auto transition-all ${showMap ? 'md:w-1/2' : 'w-full'}`}>
+        <div className={`flex-1 p-3 sm:p-6 md:overflow-auto transition-all ${showMap ? 'md:w-1/2' : 'w-full'}`}
+          style={{ minHeight: 500 }}>
           <CalendarView
             events={store.events}
             view={view}
@@ -154,7 +170,7 @@ export default function App() {
         {/* Map panel */}
         {showMap && (
           <div className="md:w-1/2 border-t md:border-t-0 md:border-l"
-            style={{ borderColor: 'var(--clr-border)', minHeight: 350 }}>
+            style={{ borderColor: 'var(--clr-border)', height: 400, minHeight: 400 }}>
             <MapPanel events={store.events} onSelectEvent={openDetail} />
           </div>
         )}
@@ -164,6 +180,7 @@ export default function App() {
       {selectedEvent && (
         <EventDetail
           event={selectedEvent}
+          places={store.places}
           onClose={() => setSelectedEvent(null)}
           onEdit={() => openEdit(selectedEvent)}
           onDelete={async () => {
@@ -180,6 +197,7 @@ export default function App() {
           event={editingEvent}
           defaultDate={slotDate}
           tags={store.tags}
+          places={store.places}
           onClose={() => { setShowModal(false); setEditingEvent(null); }}
           onSave={async (data, tagIds, cbLabels, bandNames) => {
             if (editingEvent) {
@@ -202,6 +220,17 @@ export default function App() {
           onCreateTag={store.createTag}
           onUpdateTag={store.updateTag}
           onDeleteTag={store.deleteTag}
+        />
+      )}
+
+      {/* Places manager modal */}
+      {showPlacesManager && (
+        <PlacesManager
+          places={store.places}
+          onClose={() => setShowPlacesManager(false)}
+          onCreate={store.createPlace}
+          onUpdate={store.updatePlace}
+          onDelete={store.deletePlace}
         />
       )}
     </div>

@@ -11,6 +11,7 @@ create table if not exists events (
   latitude double precision,
   longitude double precision,
   price numeric(10,2),
+  place_id uuid,
   start_date timestamptz not null,
   end_date timestamptz not null,
   created_at timestamptz default now()
@@ -37,6 +38,16 @@ create table if not exists bands (
   name text not null
 );
 
+-- Places (saved venues)
+create table if not exists places (
+  id uuid default gen_random_uuid() primary key,
+  name text not null unique,
+  address text not null,
+  latitude double precision,
+  longitude double precision,
+  created_at timestamptz default now()
+);
+
 -- Checkboxes (tickets, participants, etc.)
 create table if not exists checkboxes (
   id uuid default gen_random_uuid() primary key,
@@ -51,12 +62,14 @@ alter table tags enable row level security;
 alter table event_tags enable row level security;
 alter table bands enable row level security;
 alter table checkboxes enable row level security;
+alter table places enable row level security;
 
 create policy "Allow all on events" on events for all using (true) with check (true);
 create policy "Allow all on tags" on tags for all using (true) with check (true);
 create policy "Allow all on event_tags" on event_tags for all using (true) with check (true);
 create policy "Allow all on bands" on bands for all using (true) with check (true);
 create policy "Allow all on checkboxes" on checkboxes for all using (true) with check (true);
+create policy "Allow all on places" on places for all using (true) with check (true);
 
 -- Seed a few default tags (customize these!)
 insert into tags (name, color) values
