@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import MapGL, { Marker, Popup, NavigationControl } from 'react-map-gl';
+import { useMemo, useState, useEffect, useRef } from 'react';
+import MapGL, { Marker, Popup, NavigationControl, type MapRef } from 'react-map-gl';
 import { format } from 'date-fns';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import type { EventRecord } from '../lib/types';
@@ -34,6 +34,18 @@ function groupByLocation(events: EventRecord[]) {
 
 export default function MapPanel({ events, onSelectEvent, mini }: Props) {
   const [popupEvents, setPopupEvents] = useState<EventRecord[] | null>(null);
+  const mapRef = useRef<MapRef>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Trigger Mapbox resize when container size changes
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver(() => {
+      mapRef.current?.resize();
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   const geoEvents = useMemo(
     () => events.filter((e) => e.latitude != null && e.longitude != null),
@@ -62,16 +74,18 @@ export default function MapPanel({ events, onSelectEvent, mini }: Props) {
   }
 
   return (
-    <MapGL
-      initialViewState={center}
-      style={{ width: '100%', height: '100%' }}
-      mapStyle="mapbox://styles/mapbox/dark-v11"
-      mapboxAccessToken={MAPBOX_TOKEN}
-      attributionControl={false}
-    >
-      <NavigationControl position="top-right" />
+    <div ref={containerRef} style={{ width: '100%', height: '100%' }}>
+      <MapGL
+        ref={mapRef}
+        initialViewState={center}
+        style={{ width: '100%', height: '100%' }}
+        mapStyle="mapbox://styles/mapbox/dark-v11"
+        mapboxAccessToken={MAPBOX_TOKEN}
+        attributionControl={false}
+      >
+        <NavigationControl position="top-right" />
 
-      {locationGroups.map((group) => {
+        {locationGroups.map((group) => {
         const first = group[0];
         return (
           <Marker key={`${first.latitude},${first.longitude}`}
@@ -151,5 +165,6 @@ export default function MapPanel({ events, onSelectEvent, mini }: Props) {
         </Popup>
       )}
     </MapGL>
+    </div>
   );
 }

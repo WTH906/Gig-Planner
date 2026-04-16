@@ -155,8 +155,7 @@ export default function App() {
       {/* Main content */}
       <div className="flex flex-col md:flex-row flex-1 md:overflow-hidden">
         {/* Calendar area */}
-        <div className={`flex-1 p-3 sm:p-6 md:overflow-auto transition-all ${showMap ? 'md:w-1/2' : 'w-full'}`}
-          style={{ minHeight: 500 }}>
+        <div className={`flex-1 p-3 sm:p-6 md:overflow-auto transition-all ${showMap ? 'md:w-1/2' : 'w-full'}`}>
           <CalendarView
             events={store.events}
             view={view}
@@ -169,8 +168,8 @@ export default function App() {
 
         {/* Map panel */}
         {showMap && (
-          <div className="md:w-1/2 border-t md:border-t-0 md:border-l"
-            style={{ borderColor: 'var(--clr-border)', height: 400, minHeight: 400 }}>
+          <div className="w-full md:w-1/2 border-t md:border-t-0 md:border-l"
+            style={{ borderColor: 'var(--clr-border)', height: 400, flexShrink: 0 }}>
             <MapPanel events={store.events} onSelectEvent={openDetail} />
           </div>
         )}

@@ -74,7 +74,7 @@ export default function CalendarView({
   };
 
   return (
-    <div className="flex flex-col h-full gap-4">
+    <div className="flex flex-col gap-4">
       {/* Custom navigation bar */}
       <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
         <button onClick={goToday}
@@ -100,7 +100,7 @@ export default function CalendarView({
       </div>
 
       {/* Calendar */}
-      <div className="flex-1" style={{ minHeight: 500 }}>
+      <div style={{ height: 650 }}>
         <Calendar
           localizer={localizer}
           formats={calendarFormats}
