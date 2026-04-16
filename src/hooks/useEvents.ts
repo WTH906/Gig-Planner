@@ -154,13 +154,29 @@ export function useEvents() {
       }
     }
 
-    // Band update: delete all and re-insert (bands have no state to preserve)
+    // Band update: insert new first, delete old only on success
     if (bands !== undefined) {
-      await supabase.from('bands').delete().eq('event_id', id);
+      // Get existing band IDs before inserting new ones
+      const { data: existingBands } = await supabase
+        .from('bands')
+        .select('id')
+        .eq('event_id', id);
+
+      const oldIds = (existingBands ?? []).map((b: { id: string }) => b.id);
+
       if (bands.length > 0) {
-        await supabase.from('bands').insert(
+        const { error: insertErr } = await supabase.from('bands').insert(
           bands.map((b) => ({ event_id: id, name: b.name, country: b.country }))
         );
+        // Only delete old bands if the insert succeeded
+        if (!insertErr && oldIds.length > 0) {
+          await supabase.from('bands').delete().in('id', oldIds);
+        }
+      } else {
+        // User removed all bands — safe to delete
+        if (oldIds.length > 0) {
+          await supabase.from('bands').delete().in('id', oldIds);
+        }
       }
     }
 
