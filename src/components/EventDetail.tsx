@@ -27,9 +27,12 @@ export default function EventDetail({ event, onClose, onEdit, onDelete, onToggle
       style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(3px)' }}
       onClick={onClose}>
       <div ref={ref}
-        className="w-full max-w-md h-full overflow-y-auto p-6 flex flex-col gap-5"
+        className="w-full max-w-md h-full flex flex-col"
         style={{ background: 'var(--clr-surface)', borderLeft: '1px solid var(--clr-border)' }}
         onClick={(e) => e.stopPropagation()}>
+
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-5">
 
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
@@ -56,7 +59,7 @@ export default function EventDetail({ event, onClose, onEdit, onDelete, onToggle
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2 text-sm">
             <span style={{ color: 'var(--clr-text-muted)' }}>📅</span>
-            <span>{format(new Date(event.start_date), 'EEE, MMM d yyyy')}</span>
+            <span>{format(new Date(event.start_date), 'EEEE dd/MM/yyyy')}</span>
           </div>
           <div className="flex items-center gap-2 text-sm">
             <span style={{ color: 'var(--clr-text-muted)' }}>🕐</span>
@@ -73,7 +76,7 @@ export default function EventDetail({ event, onClose, onEdit, onDelete, onToggle
           {event.price != null && (
             <div className="flex items-center gap-2 text-sm">
               <span style={{ color: 'var(--clr-text-muted)' }}>💰</span>
-              <span>{event.price.toFixed(2)} €</span>
+              <span>{parseFloat(String(event.price)).toFixed(2)} €</span>
             </div>
           )}
         </div>
@@ -96,7 +99,8 @@ export default function EventDetail({ event, onClose, onEdit, onDelete, onToggle
 
         {/* Mini map */}
         {hasCoords && (
-          <div className="rounded-xl overflow-hidden" style={{ height: 200, border: '1px solid var(--clr-border)' }}>
+          <div className="rounded-xl overflow-hidden flex-shrink-0"
+            style={{ height: 220, border: '1px solid var(--clr-border)' }}>
             <MapPanel events={[event]} mini />
           </div>
         )}
@@ -108,29 +112,38 @@ export default function EventDetail({ event, onClose, onEdit, onDelete, onToggle
               style={{ color: 'var(--clr-text-muted)' }}>Checklist</span>
             <div className="flex flex-col gap-1.5">
               {event.checkboxes.map((cb) => (
-                <label key={cb.id}
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors"
+                <div key={cb.id}
+                  onClick={() => onToggleCheckbox(cb)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer select-none transition-colors"
                   style={{
                     background: cb.checked ? 'rgba(192,132,252,0.08)' : 'var(--clr-bg)',
                     border: `1px solid ${cb.checked ? 'var(--clr-accent-dim)' : 'var(--clr-border)'}`,
                   }}>
-                  <input type="checkbox" checked={cb.checked}
-                    onChange={() => onToggleCheckbox(cb)}
-                    className="accent-purple-500 w-4 h-4" />
+                  <div className="w-5 h-5 rounded flex items-center justify-center flex-shrink-0"
+                    style={{
+                      background: cb.checked ? 'var(--clr-accent-dim)' : 'transparent',
+                      border: `2px solid ${cb.checked ? 'var(--clr-accent)' : 'var(--clr-border)'}`,
+                    }}>
+                    {cb.checked && <span className="text-white text-xs">✓</span>}
+                  </div>
                   <span className="text-sm" style={{
                     textDecoration: cb.checked ? 'line-through' : 'none',
                     opacity: cb.checked ? 0.6 : 1,
                   }}>
                     {cb.label}
                   </span>
-                </label>
+                </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* Actions */}
-        <div className="flex gap-3 mt-auto pt-4" style={{ borderTop: '1px solid var(--clr-border)' }}>
+        </div>
+        {/* /scrollable content */}
+
+        {/* Actions footer (always visible) */}
+        <div className="flex gap-3 p-6 flex-shrink-0"
+          style={{ borderTop: '1px solid var(--clr-border)', background: 'var(--clr-surface)' }}>
           <button onClick={onEdit}
             className="flex-1 py-2 rounded-lg text-sm font-semibold cursor-pointer"
             style={{ background: 'var(--clr-accent-dim)', color: '#fff' }}>

@@ -205,3 +205,39 @@ body {
 .mapboxgl-ctrl-attrib {
   display: none !important;
 }
+
+/* ========== MOBILE OVERRIDES ========== */
+@media (max-width: 640px) {
+  .rbc-month-row {
+    min-height: 80px !important;
+  }
+
+  .rbc-month-view .rbc-event {
+    padding: 3px 6px !important;
+    font-size: 0.7rem !important;
+    margin: 1px 2px !important;
+  }
+
+  .rbc-date-cell {
+    font-size: 0.75rem;
+    padding: 2px 4px !important;
+  }
+
+  .rbc-header {
+    padding: 6px 2px !important;
+    font-size: 0.7rem;
+  }
+
+  .rbc-allday-cell {
+    min-height: 150px !important;
+  }
+
+  .rbc-allday-cell .rbc-event {
+    padding: 4px 6px !important;
+    font-size: 0.75rem !important;
+  }
+
+  .rbc-show-more {
+    font-size: 0.65rem !important;
+  }
+}

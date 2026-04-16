@@ -76,7 +76,7 @@ export default function TagManager({ tags, onClose, onCreateTag, onUpdateTag, on
       style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
       onClick={onClose}>
       <div
-        className="w-full max-w-md max-h-[80vh] overflow-y-auto rounded-2xl p-6"
+        className="w-full max-w-md max-h-[80vh] overflow-y-auto rounded-2xl p-4 sm:p-6 m-2"
         style={{ background: 'var(--clr-surface)', border: '1px solid var(--clr-border)' }}
         onClick={(e) => e.stopPropagation()}>
 

@@ -49,20 +49,21 @@ export default function App() {
   // Total spending: price × checked checkboxes per event
   const totalSpent = useMemo(() => {
     return store.events.reduce((sum, ev) => {
-      if (!ev.price || !ev.checkboxes) return sum;
+      const price = parseFloat(String(ev.price ?? 0));
+      if (!price || !ev.checkboxes) return sum;
       const confirmed = ev.checkboxes.filter((cb) => cb.checked).length;
-      return sum + ev.price * confirmed;
+      return sum + price * confirmed;
     }, 0);
   }, [store.events]);
 
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <header className="flex items-center justify-between px-6 py-4 border-b"
+      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 sm:px-6 py-3 sm:py-4 border-b"
         style={{ borderColor: 'var(--clr-border)', background: 'var(--clr-surface)' }}>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between sm:justify-start gap-3 sm:gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg flex items-center justify-center text-lg"
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center text-lg flex-shrink-0"
               style={{ background: 'var(--clr-accent-dim)' }}>
               🎸
             </div>
@@ -72,20 +73,20 @@ export default function App() {
           </div>
 
           {/* Spending counter */}
-          <div className="px-3 py-1.5 rounded-lg text-sm"
+          <div className="px-3 py-1.5 rounded-lg text-xs sm:text-sm whitespace-nowrap"
             style={{ background: 'var(--clr-bg)', border: '1px solid var(--clr-border)' }}>
-            <span style={{ color: 'var(--clr-text-muted)' }}>💸 Total: </span>
+            <span style={{ color: 'var(--clr-text-muted)' }}>💸 </span>
             <span className="font-semibold" style={{ color: 'var(--clr-accent)' }}>
               {totalSpent.toFixed(2)} €
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           {/* Tag manager toggle */}
           <button
             onClick={() => setShowTagManager(true)}
-            className="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer"
+            className="px-3 py-2 sm:py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer flex-1 sm:flex-none"
             style={{
               background: 'transparent',
               color: 'var(--clr-text-muted)',
@@ -98,7 +99,7 @@ export default function App() {
           {/* Map toggle */}
           <button
             onClick={() => setShowMap(!showMap)}
-            className="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer"
+            className="px-3 py-2 sm:py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer flex-1 sm:flex-none"
             style={{
               background: showMap ? 'var(--clr-accent-dim)' : 'transparent',
               color: showMap ? '#fff' : 'var(--clr-text-muted)',
@@ -114,7 +115,7 @@ export default function App() {
               <button
                 key={v}
                 onClick={() => setView(v)}
-                className="px-3 py-1.5 text-sm font-medium transition-colors capitalize cursor-pointer"
+                className="px-3 py-2 sm:py-1.5 text-sm font-medium transition-colors capitalize cursor-pointer"
                 style={{
                   background: view === v ? 'var(--clr-accent-dim)' : 'transparent',
                   color: view === v ? '#fff' : 'var(--clr-text-muted)',
@@ -128,18 +129,18 @@ export default function App() {
           {/* New event */}
           <button
             onClick={() => openCreate()}
-            className="px-4 py-1.5 rounded-lg text-sm font-semibold transition-all cursor-pointer"
+            className="px-4 py-2 sm:py-1.5 rounded-lg text-sm font-semibold transition-all cursor-pointer flex-1 sm:flex-none"
             style={{ background: 'var(--clr-accent)', color: '#0f0f12' }}
           >
-            + New Event
+            + New
           </button>
         </div>
       </header>
 
       {/* Main content */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
         {/* Calendar area */}
-        <div className={`flex-1 p-6 overflow-auto transition-all ${showMap ? 'w-1/2' : 'w-full'}`}>
+        <div className={`flex-1 p-3 sm:p-6 overflow-auto transition-all ${showMap ? 'md:w-1/2' : 'w-full'}`}>
           <CalendarView
             events={store.events}
             view={view}
@@ -152,7 +153,8 @@ export default function App() {
 
         {/* Map panel */}
         {showMap && (
-          <div className="w-1/2 border-l" style={{ borderColor: 'var(--clr-border)' }}>
+          <div className="md:w-1/2 border-t md:border-t-0 md:border-l"
+            style={{ borderColor: 'var(--clr-border)', minHeight: 350 }}>
             <MapPanel events={store.events} onSelectEvent={openDetail} />
           </div>
         )}

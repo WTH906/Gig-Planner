@@ -143,7 +143,7 @@ export default function MapPanel({ events, onSelectEvent, mini }: Props) {
                 onClick={() => onSelectEvent?.(ev)}>
                 <strong className="text-sm">{ev.title}</strong>
                 <span className="text-xs ml-1" style={{ color: 'var(--clr-text-muted)' }}>
-                  ({format(new Date(ev.start_date), 'MMM d, yyyy')})
+                  ({format(new Date(ev.start_date), 'dd/MM/yyyy')})
                 </span>
               </div>
             ))}

@@ -1,11 +1,22 @@
 import { useMemo, useCallback } from 'react';
 import { Calendar, dateFnsLocalizer, type View } from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
-import { enUS } from 'date-fns/locale/en-US';
+import { enGB } from 'date-fns/locale/en-GB';
 import type { EventRecord, CalendarEvent, CalendarView as ViewType } from '../lib/types';
 
-const locales = { 'en-US': enUS };
+const locales = { 'en-GB': enGB };
 const localizer = dateFnsLocalizer({ format, parse, startOfWeek, getDay, locales });
+
+const calendarFormats = {
+  timeGutterFormat: 'HH:mm',
+  eventTimeRangeFormat: ({ start, end }: { start: Date; end: Date }) =>
+    `${format(start, 'HH:mm')} – ${format(end, 'HH:mm')}`,
+  agendaTimeFormat: 'HH:mm',
+  agendaDateFormat: 'dd/MM/yyyy',
+  dayHeaderFormat: 'EEEE dd/MM',
+  dayRangeHeaderFormat: ({ start, end }: { start: Date; end: Date }) =>
+    `${format(start, 'dd/MM')} – ${format(end, 'dd/MM/yyyy')}`,
+};
 
 interface Props {
   events: EventRecord[];
@@ -84,7 +95,7 @@ export default function CalendarView({
           </button>
         </div>
         <h2 className="text-lg font-semibold" style={{ fontFamily: 'var(--font-display)' }}>
-          {format(currentDate, view === 'month' ? 'MMMM yyyy' : "'Week of' MMM d, yyyy")}
+          {format(currentDate, view === 'month' ? 'MMMM yyyy' : "'Week of' dd/MM/yyyy")}
         </h2>
       </div>
 
@@ -92,6 +103,8 @@ export default function CalendarView({
       <div className="flex-1" style={{ minHeight: 500 }}>
         <Calendar
           localizer={localizer}
+          formats={calendarFormats}
+          culture="en-GB"
           events={calendarEvents}
           view={view as View}
           date={currentDate}
