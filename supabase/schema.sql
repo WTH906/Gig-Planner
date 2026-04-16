@@ -35,7 +35,8 @@ create table if not exists event_tags (
 create table if not exists bands (
   id uuid default gen_random_uuid() primary key,
   event_id uuid references events(id) on delete cascade,
-  name text not null
+  name text not null,
+  country text default ''
 );
 
 -- Places (saved venues)

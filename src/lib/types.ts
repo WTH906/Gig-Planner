@@ -15,6 +15,7 @@ export interface Band {
   id: string;
   event_id: string;
   name: string;
+  country: string;
 }
 
 export interface Place {

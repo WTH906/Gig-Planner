@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { format } from 'date-fns';
 import type { EventRecord, Checkbox, Place } from '../lib/types';
+import { countryToFlag } from '../lib/countries';
 import MapPanel from './MapPanel';
 
 interface Props {
@@ -98,6 +99,9 @@ export default function EventDetail({ event, places, onClose, onEdit, onDelete, 
               {event.bands.map((band) => (
                 <div key={band.id} className="flex items-center gap-2 text-sm">
                   <span style={{ color: 'var(--clr-accent)' }}>♪</span>
+                  {band.country && (
+                    <span className="text-base" title={band.country}>{countryToFlag(band.country)}</span>
+                  )}
                   <span className="font-medium">{band.name}</span>
                 </div>
               ))}

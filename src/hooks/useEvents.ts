@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
-import type { EventRecord, Tag, Checkbox, Band, Place } from '../lib/types';
+import type { EventRecord, Tag, Checkbox, Place } from '../lib/types';
 
 export function useEvents() {
   const [events, setEvents] = useState<EventRecord[]>([]);
@@ -68,7 +68,7 @@ export function useEvents() {
     event: Omit<EventRecord, 'id' | 'created_at' | 'tags' | 'checkboxes' | 'bands'>,
     tagIds: string[],
     checkboxLabels: string[],
-    bandNames: string[]
+    bands: { name: string; country: string }[]
   ) => {
     const { data, error } = await supabase
       .from('events')
@@ -94,9 +94,9 @@ export function useEvents() {
       );
     }
 
-    if (bandNames.length > 0) {
+    if (bands.length > 0) {
       await supabase.from('bands').insert(
-        bandNames.map((name) => ({ event_id: data.id, name }))
+        bands.map((b) => ({ event_id: data.id, name: b.name, country: b.country }))
       );
     }
 
@@ -109,7 +109,7 @@ export function useEvents() {
     event: Partial<Omit<EventRecord, 'id' | 'created_at' | 'tags' | 'checkboxes' | 'bands'>>,
     tagIds?: string[],
     checkboxLabels?: string[],
-    bandNames?: string[]
+    bands?: { name: string; country: string }[]
   ) => {
     await supabase.from('events').update(event).eq('id', id);
 
@@ -154,30 +154,12 @@ export function useEvents() {
       }
     }
 
-    // Smart band update: preserve existing, add new, remove deleted
-    if (bandNames !== undefined) {
-      const { data: existing } = await supabase
-        .from('bands')
-        .select('*')
-        .eq('event_id', id);
-
-      const existingMap = new Map(
-        (existing ?? []).map((b: Band) => [b.name, b])
-      );
-
-      const namesToKeep = new Set(bandNames);
-      const idsToDelete = (existing ?? [])
-        .filter((b: Band) => !namesToKeep.has(b.name))
-        .map((b: Band) => b.id);
-
-      if (idsToDelete.length > 0) {
-        await supabase.from('bands').delete().in('id', idsToDelete);
-      }
-
-      const newNames = bandNames.filter((name) => !existingMap.has(name));
-      if (newNames.length > 0) {
+    // Band update: delete all and re-insert (bands have no state to preserve)
+    if (bands !== undefined) {
+      await supabase.from('bands').delete().eq('event_id', id);
+      if (bands.length > 0) {
         await supabase.from('bands').insert(
-          newNames.map((name) => ({ event_id: id, name }))
+          bands.map((b) => ({ event_id: id, name: b.name, country: b.country }))
         );
       }
     }

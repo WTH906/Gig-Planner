@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { EventRecord, Tag, Place } from '../lib/types';
 import { geocodeAddress } from '../lib/geocode';
+import { COUNTRIES, countryToFlag } from '../lib/countries';
 
 interface Props {
   event: EventRecord | null;
@@ -12,7 +13,7 @@ interface Props {
     data: Partial<EventRecord>,
     tagIds: string[],
     checkboxLabels: string[],
-    bandNames: string[]
+    bands: { name: string; country: string }[]
   ) => Promise<void>;
   onCreateTag: (name: string, color: string) => Promise<Tag | null>;
 }
@@ -44,11 +45,12 @@ export default function EventModal({ event, defaultDate, tags, places, onClose, 
   const [checkboxLabels, setCheckboxLabels] = useState<string[]>(
     event?.checkboxes?.map((cb) => cb.label) ?? ['Tickets taken']
   );
-  const [bandNames, setBandNames] = useState<string[]>(
-    event?.bands?.map((b) => b.name) ?? []
+  const [bands, setBands] = useState<{ name: string; country: string }[]>(
+    event?.bands?.map((b) => ({ name: b.name, country: b.country || '' })) ?? []
   );
-  const [newCbLabel, setNewCbLabel] = useState('');
   const [newBandName, setNewBandName] = useState('');
+  const [newBandCountry, setNewBandCountry] = useState('');
+  const [newCbLabel, setNewCbLabel] = useState('');
   const [price, setPrice] = useState<string>(event?.price != null ? String(event.price) : '');
   const [newTagName, setNewTagName] = useState('');
   const [newTagColor, setNewTagColor] = useState('#6366f1');
@@ -79,16 +81,20 @@ export default function EventModal({ event, defaultDate, tags, places, onClose, 
 
   const addBand = () => {
     if (newBandName.trim()) {
-      setBandNames((prev) => [...prev, newBandName.trim()]);
+      setBands((prev) => [...prev, { name: newBandName.trim(), country: newBandCountry }]);
       setNewBandName('');
+      setNewBandCountry('');
     }
   };
 
   const removeBand = (idx: number) =>
-    setBandNames((prev) => prev.filter((_, i) => i !== idx));
+    setBands((prev) => prev.filter((_, i) => i !== idx));
 
-  const updateBand = (idx: number, value: string) =>
-    setBandNames((prev) => prev.map((b, i) => (i === idx ? value : b)));
+  const updateBandName = (idx: number, value: string) =>
+    setBands((prev) => prev.map((b, i) => (i === idx ? { ...b, name: value } : b)));
+
+  const updateBandCountry = (idx: number, value: string) =>
+    setBands((prev) => prev.map((b, i) => (i === idx ? { ...b, country: value } : b)));
 
   const handleCreateTag = async () => {
     if (!newTagName.trim()) return;
@@ -136,7 +142,7 @@ export default function EventModal({ event, defaultDate, tags, places, onClose, 
       end_date: new Date(endDate).toISOString(),
     };
 
-    await onSave(data, selectedTags, checkboxLabels, bandNames.filter((b) => b.trim()));
+    await onSave(data, selectedTags, checkboxLabels, bands.filter((b) => b.name.trim()));
     setSaving(false);
   };
 
@@ -232,12 +238,20 @@ export default function EventModal({ event, defaultDate, tags, places, onClose, 
             Lineup
           </span>
           <div className="flex flex-col gap-1.5 mb-2">
-            {bandNames.map((band, idx) => (
+            {bands.map((band, idx) => (
               <div key={idx} className="flex items-center gap-2">
-                <input value={band}
-                  onChange={(e) => updateBand(idx, e.target.value)}
+                <input value={band.name}
+                  onChange={(e) => updateBandName(idx, e.target.value)}
                   style={{ ...inputStyle, flex: 1 }}
                   placeholder={`Band ${idx + 1}`} />
+                <select value={band.country}
+                  onChange={(e) => updateBandCountry(idx, e.target.value)}
+                  style={{ ...inputStyle, width: 130, flex: 'none', appearance: 'none' }}>
+                  <option value="">🌍 Country</option>
+                  {COUNTRIES.map((c) => (
+                    <option key={c.code} value={c.code}>{countryToFlag(c.code)} {c.name}</option>
+                  ))}
+                </select>
                 <button onClick={() => removeBand(idx)}
                   className="text-xs cursor-pointer w-7 h-7 rounded flex items-center justify-center flex-shrink-0"
                   style={{ color: 'var(--clr-danger)', border: '1px solid var(--clr-border)' }}>✕</button>
@@ -248,6 +262,14 @@ export default function EventModal({ event, defaultDate, tags, places, onClose, 
             <input value={newBandName} onChange={(e) => setNewBandName(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && addBand()}
               placeholder="Add a band…" style={{ ...inputStyle, flex: 1 }} />
+            <select value={newBandCountry}
+              onChange={(e) => setNewBandCountry(e.target.value)}
+              style={{ ...inputStyle, width: 130, flex: 'none', appearance: 'none' }}>
+              <option value="">🌍 Country</option>
+              {COUNTRIES.map((c) => (
+                <option key={c.code} value={c.code}>{countryToFlag(c.code)} {c.name}</option>
+              ))}
+            </select>
             <button onClick={addBand}
               className="px-3 py-1 rounded-lg text-xs font-semibold cursor-pointer flex-shrink-0"
               style={{ background: 'var(--clr-accent-dim)', color: '#fff' }}>

@@ -198,11 +198,11 @@ export default function App() {
           tags={store.tags}
           places={store.places}
           onClose={() => { setShowModal(false); setEditingEvent(null); }}
-          onSave={async (data, tagIds, cbLabels, bandNames) => {
+          onSave={async (data, tagIds, cbLabels, bands) => {
             if (editingEvent) {
-              await store.updateEvent(editingEvent.id, data, tagIds, cbLabels, bandNames);
+              await store.updateEvent(editingEvent.id, data, tagIds, cbLabels, bands);
             } else {
-              await store.createEvent(data as any, tagIds, cbLabels, bandNames);
+              await store.createEvent(data as any, tagIds, cbLabels, bands);
             }
             setShowModal(false);
             setEditingEvent(null);
