@@ -42,8 +42,7 @@ export function useEvents() {
 
     const { data: bandData } = await supabase
       .from('bands')
-      .select('*')
-      .order('name');
+      .select('*');
 
     const merged = eventsData.map((ev) => ({
       ...ev,
