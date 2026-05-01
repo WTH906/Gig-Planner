@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { EventRecord, Tag, Place } from '../lib/types';
 import { geocodeAddress } from '../lib/geocode';
-import { COUNTRIES, countryToFlag } from '../lib/countries';
+import CountryPicker from './CountryPicker';
 
 interface Props {
   event: EventRecord | null;
@@ -244,14 +244,7 @@ export default function EventModal({ event, defaultDate, tags, places, onClose, 
                   onChange={(e) => updateBandName(idx, e.target.value)}
                   style={{ ...inputStyle, flex: 1 }}
                   placeholder={`Band ${idx + 1}`} />
-                <select value={band.country}
-                  onChange={(e) => updateBandCountry(idx, e.target.value)}
-                  style={{ ...inputStyle, width: 130, flex: 'none', appearance: 'none' }}>
-                  <option value="">🌍 Country</option>
-                  {COUNTRIES.map((c) => (
-                    <option key={c.code} value={c.code}>{countryToFlag(c.code)} {c.name}</option>
-                  ))}
-                </select>
+                <CountryPicker value={band.country} onChange={(code) => updateBandCountry(idx, code)} />
                 <button onClick={() => removeBand(idx)}
                   className="text-xs cursor-pointer w-7 h-7 rounded flex items-center justify-center flex-shrink-0"
                   style={{ color: 'var(--clr-danger)', border: '1px solid var(--clr-border)' }}>✕</button>
@@ -262,14 +255,7 @@ export default function EventModal({ event, defaultDate, tags, places, onClose, 
             <input value={newBandName} onChange={(e) => setNewBandName(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && addBand()}
               placeholder="Add a band…" style={{ ...inputStyle, flex: 1 }} />
-            <select value={newBandCountry}
-              onChange={(e) => setNewBandCountry(e.target.value)}
-              style={{ ...inputStyle, width: 130, flex: 'none', appearance: 'none' }}>
-              <option value="">🌍 Country</option>
-              {COUNTRIES.map((c) => (
-                <option key={c.code} value={c.code}>{countryToFlag(c.code)} {c.name}</option>
-              ))}
-            </select>
+            <CountryPicker value={newBandCountry} onChange={setNewBandCountry} />
             <button onClick={addBand}
               className="px-3 py-1 rounded-lg text-xs font-semibold cursor-pointer flex-shrink-0"
               style={{ background: 'var(--clr-accent-dim)', color: '#fff' }}>

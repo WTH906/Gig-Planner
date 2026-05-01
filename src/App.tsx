@@ -6,7 +6,7 @@ import EventDetail from './components/EventDetail';
 import MapPanel from './components/MapPanel';
 import TagManager from './components/TagManager';
 import PlacesManager from './components/PlacesManager';
-import { countryToFlag } from './lib/countries';
+import { flagUrl } from './lib/countries';
 import type { EventRecord, CalendarView as ViewType } from './lib/types';
 
 export default function App() {
@@ -21,6 +21,7 @@ export default function App() {
   const [showPlacesManager, setShowPlacesManager] = useState(false);
   const [showCountryStats, setShowCountryStats] = useState(false);
   const [showParticipantStats, setShowParticipantStats] = useState(false);
+  const [expandedParticipant, setExpandedParticipant] = useState<string | null>(null);
   const countryStatsRef = useRef<HTMLDivElement>(null);
   const [slotDate, setSlotDate] = useState<Date | null>(null);
 
@@ -78,21 +79,29 @@ export default function App() {
       }
 
       const totalBands = Object.values(bandCounts).reduce((s, b) => s + b.count, 0);
-      const topBands = Object.entries(bandCounts)
+      const allBands = Object.entries(bandCounts)
         .map(([bName, data]) => ({ name: bName, count: data.count, country: data.country }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 5);
+        .sort((a, b) => b.count - a.count);
+      const topBands = allBands.slice(0, 5);
       const topCountries = Object.entries(countryCounts)
         .map(([code, count]) => ({ code, count }))
         .sort((a, b) => b.count - a.count)
         .slice(0, 5);
 
+      // Total spent by this participant
+      const totalSpent = attendedEvents.reduce((sum, ev) => {
+        const price = parseFloat(String(ev.price ?? 0));
+        return sum + (price || 0);
+      }, 0);
+
       return {
         name,
         events: attendedEvents.length,
         totalBands,
+        allBands,
         topBands,
         topCountries,
+        totalSpent,
       };
     })
       .sort((a, b) => b.totalBands - a.totalBands);
@@ -148,6 +157,37 @@ export default function App() {
     }, 0);
   }, [store.events]);
 
+  // Per-participant spending
+  const [showSpendingDetails, setShowSpendingDetails] = useState(false);
+  const spendingRef = useRef<HTMLDivElement>(null);
+
+  const spendingByParticipant = useMemo(() => {
+    const totals: Record<string, number> = {};
+    for (const ev of store.events) {
+      const price = parseFloat(String(ev.price ?? 0));
+      if (!price || !ev.checkboxes) continue;
+      for (const cb of ev.checkboxes) {
+        if (cb.checked) {
+          totals[cb.label] = (totals[cb.label] || 0) + price;
+        }
+      }
+    }
+    return Object.entries(totals)
+      .map(([name, amount]) => ({ name, amount }))
+      .sort((a, b) => b.amount - a.amount);
+  }, [store.events]);
+
+  useEffect(() => {
+    if (!showSpendingDetails) return;
+    const handler = (e: MouseEvent) => {
+      if (spendingRef.current && !spendingRef.current.contains(e.target as Node)) {
+        setShowSpendingDetails(false);
+      }
+    };
+    setTimeout(() => document.addEventListener('click', handler), 0);
+    return () => document.removeEventListener('click', handler);
+  }, [showSpendingDetails]);
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
@@ -165,12 +205,46 @@ export default function App() {
           </div>
 
           {/* Spending counter */}
-          <div className="px-3 py-1.5 rounded-lg text-xs sm:text-sm whitespace-nowrap"
-            style={{ background: 'var(--clr-bg)', border: '1px solid var(--clr-border)' }}>
-            <span style={{ color: 'var(--clr-text-muted)' }}>💸 </span>
-            <span className="font-semibold" style={{ color: 'var(--clr-accent)' }}>
-              {totalSpent.toFixed(2)} €
-            </span>
+          <div className="relative" ref={spendingRef}>
+            <button
+              onClick={() => setShowSpendingDetails(!showSpendingDetails)}
+              className="px-3 py-1.5 rounded-lg text-xs sm:text-sm whitespace-nowrap cursor-pointer transition-colors"
+              style={{ background: showSpendingDetails ? 'var(--clr-accent-dim)' : 'var(--clr-bg)', border: '1px solid var(--clr-border)' }}>
+              <span style={{ color: showSpendingDetails ? '#fff' : 'var(--clr-text-muted)' }}>💸 </span>
+              <span className="font-semibold" style={{ color: showSpendingDetails ? '#fff' : 'var(--clr-accent)' }}>
+                {totalSpent.toFixed(2)} €
+              </span>
+            </button>
+            {showSpendingDetails && (
+              <div className="absolute top-full mt-2 left-0 z-50 rounded-xl p-4 min-w-[200px]"
+                style={{ background: 'var(--clr-surface)', border: '1px solid var(--clr-border)', boxShadow: '0 12px 40px rgba(0,0,0,0.5)' }}>
+                <div className="text-xs uppercase tracking-wider mb-3"
+                  style={{ color: 'var(--clr-text-muted)' }}>Spending by participant</div>
+                {spendingByParticipant.length === 0 ? (
+                  <div className="text-sm" style={{ color: 'var(--clr-text-muted)' }}>No spending data yet</div>
+                ) : (
+                  <>
+                    <div className="flex flex-col gap-1.5">
+                      {spendingByParticipant.map(({ name, amount }) => (
+                        <div key={name} className="flex items-center justify-between gap-4">
+                          <span className="text-sm">{name}</span>
+                          <span className="font-semibold text-sm whitespace-nowrap" style={{ color: 'var(--clr-accent)' }}>
+                            {amount.toFixed(2)} €
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-3 pt-3 flex items-center justify-between text-xs"
+                      style={{ borderTop: '1px solid var(--clr-border)', color: 'var(--clr-text-muted)' }}>
+                      <span>Total</span>
+                      <span className="font-semibold" style={{ color: 'var(--clr-text)' }}>
+                        {totalSpent.toFixed(2)} €
+                      </span>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Country stats */}
@@ -198,7 +272,7 @@ export default function App() {
                     <div className="flex flex-col gap-1.5">
                       {countryStats.map(({ code, count, pct }) => (
                         <div key={code} className="flex items-center gap-3">
-                          <span className="text-xl">{countryToFlag(code)}</span>
+                          <img src={flagUrl(code)} alt={code} className="w-6 h-4 object-cover rounded-sm" />
                           <span className="font-semibold text-sm" style={{ color: 'var(--clr-text)' }}>{count}</span>
                           <span className="text-xs ml-auto" style={{ color: 'var(--clr-text-muted)' }}>{pct}%</span>
                         </div>
@@ -317,7 +391,7 @@ export default function App() {
         {showMap && (
           <div className="w-full md:w-1/2 border-t md:border-t-0 md:border-l"
             style={{ borderColor: 'var(--clr-border)', height: 400, flexShrink: 0 }}>
-            <MapPanel events={store.events} onSelectEvent={openDetail} />
+            <MapPanel events={store.events.filter((e) => new Date(e.start_date) >= new Date(new Date().toDateString()))} onSelectEvent={openDetail} />
           </div>
         )}
       </div>
@@ -403,7 +477,11 @@ export default function App() {
               </p>
             ) : (
               <div className="flex flex-col gap-4">
-                {participantStats.map((p) => (
+                {participantStats.map((p) => {
+                  const isExpanded = expandedParticipant === p.name;
+                  const bandsToShow = isExpanded ? p.allBands : p.topBands;
+
+                  return (
                   <div key={p.name} className="rounded-xl p-4"
                     style={{ background: 'var(--clr-bg)', border: '1px solid var(--clr-border)' }}>
 
@@ -414,6 +492,14 @@ export default function App() {
                         <span>{p.events} event{p.events !== 1 ? 's' : ''}</span>
                         <span>•</span>
                         <span>{p.totalBands} band{p.totalBands !== 1 ? 's' : ''}</span>
+                        {p.totalSpent > 0 && (
+                          <>
+                            <span>•</span>
+                            <span className="font-semibold" style={{ color: 'var(--clr-accent)' }}>
+                              {p.totalSpent.toFixed(2)} €
+                            </span>
+                          </>
+                        )}
                       </div>
                     </div>
 
@@ -425,19 +511,19 @@ export default function App() {
                             {p.topCountries.map(({ code, count }) => (
                               <span key={code} className="flex items-center gap-1 text-sm px-2 py-0.5 rounded-full"
                                 style={{ background: 'var(--clr-surface)', border: '1px solid var(--clr-border)' }}>
-                                <span>{countryToFlag(code)}</span>
+                                <img src={flagUrl(code)} alt={code} className="w-5 h-3.5 object-cover rounded-sm" />
                                 <span className="font-medium text-xs">{count}</span>
                               </span>
                             ))}
                           </div>
                         )}
 
-                        {/* Top bands */}
+                        {/* Bands list */}
                         <div className="flex flex-col gap-0.5">
-                          {p.topBands.map((b) => (
+                          {bandsToShow.map((b) => (
                             <div key={b.name} className="flex items-center gap-2 text-sm">
                               <span style={{ color: 'var(--clr-accent)', fontSize: '0.7rem' }}>♪</span>
-                              {b.country && <span className="text-xs">{countryToFlag(b.country)}</span>}
+                              {b.country && <img src={flagUrl(b.country)} alt={b.country} className="w-4 h-3 object-cover rounded-sm" />}
                               <span style={{ color: 'var(--clr-text)' }}>{b.name}</span>
                               {b.count > 1 && (
                                 <span className="text-xs font-medium" style={{ color: 'var(--clr-accent)' }}>
@@ -447,10 +533,23 @@ export default function App() {
                             </div>
                           ))}
                         </div>
+
+                        {/* Expand/collapse button */}
+                        {p.allBands.length > 5 && (
+                          <button
+                            onClick={() => setExpandedParticipant(isExpanded ? null : p.name)}
+                            className="self-start text-xs cursor-pointer mt-1"
+                            style={{ color: 'var(--clr-accent)' }}>
+                            {isExpanded
+                              ? '▲ Show less'
+                              : `▼ Show all ${p.allBands.length} bands`}
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

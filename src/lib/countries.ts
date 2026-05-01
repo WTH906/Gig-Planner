@@ -1,10 +1,15 @@
-// Convert 2-letter country code to flag emoji
+// Convert 2-letter country code to flag emoji (fallback for <option> tags)
 export function countryToFlag(code: string): string {
   if (!code || code.length !== 2) return '';
   const upper = code.toUpperCase();
   return String.fromCodePoint(
     ...Array.from(upper).map((c) => 0x1f1e6 + c.charCodeAt(0) - 65)
   );
+}
+
+// Flag image URL via CDN — works on all browsers including Windows Chrome
+export function flagUrl(code: string, size: number = 20): string {
+  return `https://flagcdn.com/w${size}/${code.toLowerCase()}.png`;
 }
 
 export interface Country {
